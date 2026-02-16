@@ -6,9 +6,23 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import { ModulePage } from "@/components/ModulePage";
+import InstitutesPage from "./pages/Institutes";
+import StudentsPage from "./pages/Students";
+import FeesPage from "./pages/Fees";
+import LibraryPage from "./pages/Library";
+import DocumentsPage from "./pages/Documents";
+import AcademicsPage from "./pages/Academics";
+import AlumniPage from "./pages/Alumni";
+import ReportsPage from "./pages/Reports";
+import NotificationsPage from "./pages/Notifications";
+import RolesPage from "./pages/Roles";
+import SettingsPage from "./pages/Settings";
 
 const queryClient = new QueryClient();
+
+const Wrap = ({ children }: { children: React.ReactNode }) => (
+  <AppLayout>{children}</AppLayout>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -17,18 +31,18 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<AppLayout><Index /></AppLayout>} />
-          <Route path="/institutes" element={<ModulePage title="Institutes" description="Manage all 7 institutes, programs, batches, and academic configurations." />} />
-          <Route path="/students" element={<ModulePage title="Student Lifecycle" description="Admissions, profiles, attendance, grades, transfers, and alumni conversion." />} />
-          <Route path="/fees" element={<ModulePage title="Fees & Billing" description="Fee templates, scholarships, invoicing, collections, refunds, and GST compliance." />} />
-          <Route path="/library" element={<ModulePage title="Library Management" description="Catalog, circulation, OPAC search, inventory, barcode/RFID integration." />} />
-          <Route path="/documents" element={<ModulePage title="Document Management" description="Secure repository with versioning, expiry reminders, e-sign workflows." />} />
-          <Route path="/academics" element={<ModulePage title="Academics" description="Programs, timetables, enrollments, attendance tracking, and grade management." />} />
-          <Route path="/alumni" element={<ModulePage title="Alumni Portal" description="Directory, transcripts, experience letters, events, and donations." />} />
-          <Route path="/reports" element={<ModulePage title="Reports & Analytics" description="Scheduled reports, pivot builder, revenue summaries, and compliance exports." />} />
-          <Route path="/notifications" element={<ModulePage title="Notifications" description="Push, Email, SMS/WhatsApp channels with automated triggers and templates." />} />
-          <Route path="/roles" element={<ModulePage title="User Roles" description="Role-based access control for Group Admin, Institute Admin, Faculty, and more." />} />
-          <Route path="/settings" element={<ModulePage title="Settings" description="System configuration, payment gateways, integrations, and audit logs." />} />
+          <Route path="/" element={<Wrap><Index /></Wrap>} />
+          <Route path="/institutes" element={<Wrap><InstitutesPage /></Wrap>} />
+          <Route path="/students" element={<Wrap><StudentsPage /></Wrap>} />
+          <Route path="/fees" element={<Wrap><FeesPage /></Wrap>} />
+          <Route path="/library" element={<Wrap><LibraryPage /></Wrap>} />
+          <Route path="/documents" element={<Wrap><DocumentsPage /></Wrap>} />
+          <Route path="/academics" element={<Wrap><AcademicsPage /></Wrap>} />
+          <Route path="/alumni" element={<Wrap><AlumniPage /></Wrap>} />
+          <Route path="/reports" element={<Wrap><ReportsPage /></Wrap>} />
+          <Route path="/notifications" element={<Wrap><NotificationsPage /></Wrap>} />
+          <Route path="/roles" element={<Wrap><RolesPage /></Wrap>} />
+          <Route path="/settings" element={<Wrap><SettingsPage /></Wrap>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
