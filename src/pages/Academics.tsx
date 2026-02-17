@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { CalendarDays, Clock, Users, BookOpen, Plus, Search } from "lucide-react";
+import { CalendarDays, Clock, Users, BookOpen, Plus } from "lucide-react";
+import FormModal, { FormField, inputClass, selectClass } from "@/components/FormModal";
+import { toast } from "sonner";
 
 const tabs = ["Programs", "Timetable", "Attendance"];
+const institutesList = ["B.Sc Nursing", "GNM Nursing", "Physiotherapy", "PB.B.Sc", "M.Sc Nursing", "ANM", "OT Technology"];
 
-const programsData = [
+const initialPrograms = [
   { id: 1, name: "B.Sc Nursing", institute: "B.Sc Nursing", duration: "4 years", degree: "Bachelor", batches: 4, students: 520, seats: 150, intake: "August" },
   { id: 2, name: "GNM", institute: "GNM Nursing", duration: "3.5 years", degree: "Diploma", batches: 3, students: 380, seats: 100, intake: "August" },
   { id: 3, name: "BPT", institute: "Physiotherapy", duration: "4.5 years", degree: "Bachelor", batches: 4, students: 290, seats: 80, intake: "September" },
@@ -36,21 +39,29 @@ const attendanceData = [
 
 export default function AcademicsPage() {
   const [activeTab, setActiveTab] = useState("Programs");
+  const [programs, setPrograms] = useState(initialPrograms);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", institute: "B.Sc Nursing", duration: "", degree: "Bachelor", seats: "", intake: "August" });
+
+  const handleAdd = () => {
+    if (!form.name || !form.duration) return toast.error("Program name and duration are required");
+    setPrograms([...programs, { id: Date.now(), name: form.name, institute: form.institute, duration: form.duration, degree: form.degree, batches: 1, students: 0, seats: Number(form.seats) || 0, intake: form.intake }]);
+    setModalOpen(false);
+    setForm({ name: "", institute: "B.Sc Nursing", duration: "", degree: "Bachelor", seats: "", intake: "August" });
+    toast.success(`Program "${form.name}" added`);
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Academics</h1>
-          <p className="text-sm text-muted-foreground">Programs, timetables, and attendance management</p>
-        </div>
-        <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity"><Plus className="w-4 h-4" /> Add Program</button>
+        <div><h1 className="text-2xl font-display font-bold text-foreground">Academics</h1><p className="text-sm text-muted-foreground">Programs, timetables, and attendance management</p></div>
+        <button onClick={() => setModalOpen(true)} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity"><Plus className="w-4 h-4" /> Add Program</button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="kpi-card flex items-center gap-3"><BookOpen className="w-8 h-8 text-primary" /><div><p className="text-xl font-display font-bold text-foreground">7</p><p className="text-sm text-muted-foreground">Programs</p></div></div>
-        <div className="kpi-card flex items-center gap-3"><Users className="w-8 h-8 text-info" /><div><p className="text-xl font-display font-bold text-foreground">2,847</p><p className="text-sm text-muted-foreground">Total Students</p></div></div>
-        <div className="kpi-card flex items-center gap-3"><CalendarDays className="w-8 h-8 text-success" /><div><p className="text-xl font-display font-bold text-foreground">19</p><p className="text-sm text-muted-foreground">Active Batches</p></div></div>
+        <div className="kpi-card flex items-center gap-3"><BookOpen className="w-8 h-8 text-primary" /><div><p className="text-xl font-display font-bold text-foreground">{programs.length}</p><p className="text-sm text-muted-foreground">Programs</p></div></div>
+        <div className="kpi-card flex items-center gap-3"><Users className="w-8 h-8 text-info" /><div><p className="text-xl font-display font-bold text-foreground">{programs.reduce((a, b) => a + b.students, 0).toLocaleString()}</p><p className="text-sm text-muted-foreground">Total Students</p></div></div>
+        <div className="kpi-card flex items-center gap-3"><CalendarDays className="w-8 h-8 text-success" /><div><p className="text-xl font-display font-bold text-foreground">{programs.reduce((a, b) => a + b.batches, 0)}</p><p className="text-sm text-muted-foreground">Active Batches</p></div></div>
         <div className="kpi-card flex items-center gap-3"><Clock className="w-8 h-8 text-warning" /><div><p className="text-xl font-display font-bold text-foreground">86.2%</p><p className="text-sm text-muted-foreground">Avg Attendance</p></div></div>
       </div>
 
@@ -71,7 +82,7 @@ export default function AcademicsPage() {
             <th className="text-center py-3 px-4 text-muted-foreground font-medium text-xs uppercase tracking-wider">Students</th>
             <th className="text-center py-3 px-4 text-muted-foreground font-medium text-xs uppercase tracking-wider">Seats/Year</th>
             <th className="text-center py-3 px-4 text-muted-foreground font-medium text-xs uppercase tracking-wider">Intake</th>
-          </tr></thead><tbody>{programsData.map((p) => (
+          </tr></thead><tbody>{programs.map((p) => (
             <tr key={p.id} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
               <td className="py-3 px-4 font-medium text-foreground">{p.name}</td>
               <td className="py-3 px-4 text-muted-foreground">{p.institute}</td>
@@ -90,9 +101,7 @@ export default function AcademicsPage() {
         <div className="animate-fade-in space-y-3">
           <div className="flex items-center gap-3">
             <select className="px-3 py-2 rounded-lg border border-border bg-card text-sm text-foreground focus:ring-2 focus:ring-ring outline-none">
-              <option>B.Sc Nursing — Year 1</option>
-              <option>GNM — Year 1</option>
-              <option>BPT — Year 1</option>
+              <option>B.Sc Nursing — Year 1</option><option>GNM — Year 1</option><option>BPT — Year 1</option>
             </select>
           </div>
           <div className="bg-card rounded-xl border border-border/50 shadow-card overflow-hidden">
@@ -136,6 +145,19 @@ export default function AcademicsPage() {
           ))}</tbody></table></div>
         </div>
       )}
+
+      <FormModal open={modalOpen} onClose={() => setModalOpen(false)} title="Add Program" onSubmit={handleAdd} submitLabel="Add Program">
+        <FormField label="Program Name" required><input className={inputClass} placeholder="e.g. B.Sc Nursing" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></FormField>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Institute"><select className={selectClass} value={form.institute} onChange={(e) => setForm({ ...form, institute: e.target.value })}>{institutesList.map(i => <option key={i} value={i}>{i}</option>)}</select></FormField>
+          <FormField label="Degree"><select className={selectClass} value={form.degree} onChange={(e) => setForm({ ...form, degree: e.target.value })}>{["Bachelor", "Master", "Diploma"].map(d => <option key={d} value={d}>{d}</option>)}</select></FormField>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <FormField label="Duration" required><input className={inputClass} placeholder="e.g. 4 years" value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} /></FormField>
+          <FormField label="Seats/Year"><input className={inputClass} type="number" placeholder="100" value={form.seats} onChange={(e) => setForm({ ...form, seats: e.target.value })} /></FormField>
+          <FormField label="Intake Month"><select className={selectClass} value={form.intake} onChange={(e) => setForm({ ...form, intake: e.target.value })}>{["August", "September", "January", "June"].map(m => <option key={m} value={m}>{m}</option>)}</select></FormField>
+        </div>
+      </FormModal>
     </div>
   );
 }
