@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { FileText, Upload, Search, Eye, Download, Clock, Folder, AlertTriangle, Plus, Filter } from "lucide-react";
+import { FileText, Upload, Search, Eye, Download, Clock, Folder, AlertTriangle, Plus } from "lucide-react";
+import FormModal, { FormField, inputClass, selectClass } from "@/components/FormModal";
+import { toast } from "sonner";
 
 const categories = ["All", "Admission", "Academic", "Identity", "Accreditation", "Financial", "Staff"];
 
-const documentsData = [
+const initialDocs = [
   { id: 1, name: "NAAC Certificate — B.Sc Nursing", category: "Accreditation", owner: "B.Sc Nursing Institute", uploadedBy: "Admin", date: "2024-08-15", expiresAt: "2025-08-15", status: "valid", size: "2.4 MB", version: "v3" },
   { id: 2, name: "Affiliation Letter 2025-26", category: "Accreditation", owner: "GNM Institute", uploadedBy: "Admin", date: "2025-01-20", expiresAt: "2026-01-20", status: "valid", size: "1.8 MB", version: "v1" },
   { id: 3, name: "Priya Sharma — Admission Docs", category: "Admission", owner: "Priya Sharma (STU001)", uploadedBy: "Registrar", date: "2024-06-10", expiresAt: null, status: "valid", size: "5.2 MB", version: "v1" },
@@ -16,42 +18,50 @@ const documentsData = [
   { id: 10, name: "Exam Results Template", category: "Academic", owner: "All Institutes", uploadedBy: "Registrar", date: "2025-04-01", expiresAt: null, status: "valid", size: "340 KB", version: "v4" },
 ];
 
-const statusStyle: Record<string, string> = {
-  valid: "bg-success/10 text-success",
-  expired: "bg-destructive/10 text-destructive",
-  expiring: "bg-warning/10 text-warning",
-};
+const statusStyle: Record<string, string> = { valid: "bg-success/10 text-success", expired: "bg-destructive/10 text-destructive", expiring: "bg-warning/10 text-warning" };
 
 export default function DocumentsPage() {
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("All");
+  const [docs, setDocs] = useState(initialDocs);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", category: "Admission", owner: "", uploadedBy: "", expiresAt: "" });
 
-  const filtered = documentsData.filter((d) => {
+  const filtered = docs.filter((d) => {
     const matchSearch = d.name.toLowerCase().includes(search.toLowerCase());
     const matchCat = filterCategory === "All" || d.category === filterCategory;
     return matchSearch && matchCat;
   });
 
-  const expiring = documentsData.filter(d => d.status === "expiring" || d.status === "expired").length;
+  const expiring = docs.filter(d => d.status === "expiring" || d.status === "expired").length;
+
+  const handleUpload = () => {
+    if (!form.name || !form.owner) return toast.error("Document name and owner are required");
+    const today = new Date().toISOString().split("T")[0];
+    setDocs([...docs, { id: Date.now(), name: form.name, category: form.category, owner: form.owner, uploadedBy: form.uploadedBy || "Admin", date: today, expiresAt: form.expiresAt || null, status: "valid", size: "1.0 MB", version: "v1" }]);
+    setModalOpen(false);
+    setForm({ name: "", category: "Admission", owner: "", uploadedBy: "", expiresAt: "" });
+    toast.success(`Document "${form.name}" uploaded`);
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-display font-bold text-foreground">Document Management</h1>
-          <p className="text-sm text-muted-foreground">{documentsData.length} documents · {expiring} need attention</p>
+          <p className="text-sm text-muted-foreground">{docs.length} documents · {expiring} need attention</p>
         </div>
         <div className="flex gap-2">
           <button className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors"><Upload className="w-4 h-4" /> Bulk Upload</button>
-          <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity"><Plus className="w-4 h-4" /> Upload Document</button>
+          <button onClick={() => setModalOpen(true)} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity"><Plus className="w-4 h-4" /> Upload Document</button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="kpi-card flex items-center gap-3"><Folder className="w-8 h-8 text-primary" /><div><p className="text-xl font-display font-bold text-foreground">{documentsData.length}</p><p className="text-sm text-muted-foreground">Total Documents</p></div></div>
+        <div className="kpi-card flex items-center gap-3"><Folder className="w-8 h-8 text-primary" /><div><p className="text-xl font-display font-bold text-foreground">{docs.length}</p><p className="text-sm text-muted-foreground">Total Documents</p></div></div>
         <div className="kpi-card flex items-center gap-3"><FileText className="w-8 h-8 text-success" /><div><p className="text-xl font-display font-bold text-foreground">38.5 MB</p><p className="text-sm text-muted-foreground">Storage Used</p></div></div>
-        <div className="kpi-card flex items-center gap-3"><Clock className="w-8 h-8 text-warning" /><div><p className="text-xl font-display font-bold text-foreground">1</p><p className="text-sm text-muted-foreground">Expiring Soon</p></div></div>
-        <div className="kpi-card flex items-center gap-3"><AlertTriangle className="w-8 h-8 text-destructive" /><div><p className="text-xl font-display font-bold text-foreground">1</p><p className="text-sm text-muted-foreground">Expired</p></div></div>
+        <div className="kpi-card flex items-center gap-3"><Clock className="w-8 h-8 text-warning" /><div><p className="text-xl font-display font-bold text-foreground">{docs.filter(d => d.status === "expiring").length}</p><p className="text-sm text-muted-foreground">Expiring Soon</p></div></div>
+        <div className="kpi-card flex items-center gap-3"><AlertTriangle className="w-8 h-8 text-destructive" /><div><p className="text-xl font-display font-bold text-foreground">{docs.filter(d => d.status === "expired").length}</p><p className="text-sm text-muted-foreground">Expired</p></div></div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -92,6 +102,23 @@ export default function DocumentsPage() {
           </tr>
         ))}</tbody></table></div>
       </div>
+
+      <FormModal open={modalOpen} onClose={() => setModalOpen(false)} title="Upload Document" onSubmit={handleUpload} submitLabel="Upload">
+        <FormField label="Document Name" required><input className={inputClass} placeholder="e.g. NAAC Certificate" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></FormField>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Category" required><select className={selectClass} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>{categories.filter(c => c !== "All").map(c => <option key={c} value={c}>{c}</option>)}</select></FormField>
+          <FormField label="Owner" required><input className={inputClass} placeholder="Institute or person" value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} /></FormField>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Uploaded By"><input className={inputClass} placeholder="Admin" value={form.uploadedBy} onChange={(e) => setForm({ ...form, uploadedBy: e.target.value })} /></FormField>
+          <FormField label="Expires At"><input className={inputClass} type="date" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} /></FormField>
+        </div>
+        <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+          <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-sm text-muted-foreground">Drag & drop files here or <span className="text-primary font-medium cursor-pointer">browse</span></p>
+          <p className="text-xs text-muted-foreground mt-1">PDF, DOC, JPG up to 20MB</p>
+        </div>
+      </FormModal>
     </div>
   );
 }
