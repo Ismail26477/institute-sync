@@ -16,6 +16,12 @@ import {
   Search,
   CalendarDays,
   UserCog,
+  ClipboardList,
+  CheckSquare,
+  CreditCard,
+  Home,
+  Bus,
+  PieChart,
 } from "lucide-react";
 
 const navGroups = [
@@ -23,6 +29,7 @@ const navGroups = [
     label: "Overview",
     items: [
       { title: "Dashboard", icon: LayoutDashboard, path: "/" },
+      { title: "Analytics", icon: PieChart, path: "/analytics" },
     ],
   },
   {
@@ -30,10 +37,19 @@ const navGroups = [
     items: [
       { title: "Institutes", icon: Building2, path: "/institutes" },
       { title: "Students", icon: GraduationCap, path: "/students" },
+      { title: "Attendance", icon: CheckSquare, path: "/attendance" },
+      { title: "Exams & Grading", icon: ClipboardList, path: "/exams" },
       { title: "Fees & Billing", icon: IndianRupee, path: "/fees" },
+      { title: "Payments", icon: CreditCard, path: "/payments" },
       { title: "Library", icon: BookOpen, path: "/library" },
       { title: "Documents", icon: FileText, path: "/documents" },
       { title: "Academics", icon: CalendarDays, path: "/academics" },
+    ],
+  },
+  {
+    label: "Campus",
+    items: [
+      { title: "Hostel & Transport", icon: Home, path: "/hostel" },
     ],
   },
   {
