@@ -71,7 +71,7 @@ const navGroups = [
     items: [
       { title: "Faculty", icon: Briefcase, path: "/faculty" },
       { title: "Alumni", icon: Users, path: "/alumni" },
-      { title: "ID Cards", icon: IDCard, path: "/id-cards" },
+      { title: "ID Cards", icon: CreditCard, path: "/id-cards" },
     ],
   },
   {
