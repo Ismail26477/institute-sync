@@ -33,32 +33,50 @@ const navGroups = [
     ],
   },
   {
-    label: "Management",
+    label: "Academics",
     items: [
-      { title: "Institutes", icon: Building2, path: "/institutes" },
       { title: "Students", icon: GraduationCap, path: "/students" },
       { title: "Attendance", icon: CheckSquare, path: "/attendance" },
       { title: "Exams & Grading", icon: ClipboardList, path: "/exams" },
+      { title: "Timetable", icon: Clock, path: "/timetable" },
+      { title: "Assignments", icon: Upload, path: "/assignments" },
+      { title: "Academics", icon: CalendarDays, path: "/academics" },
+    ],
+  },
+  {
+    label: "Finance",
+    items: [
       { title: "Fees & Billing", icon: IndianRupee, path: "/fees" },
       { title: "Payments", icon: CreditCard, path: "/payments" },
-      { title: "Library", icon: BookOpen, path: "/library" },
-      { title: "Documents", icon: FileText, path: "/documents" },
-      { title: "Academics", icon: CalendarDays, path: "/academics" },
+      { title: "Scholarships", icon: Award, path: "/scholarships" },
     ],
   },
   {
     label: "Campus",
     items: [
       { title: "Hostel & Transport", icon: Home, path: "/hostel" },
+      { title: "Lab & Booking", icon: FlaskConical, path: "/lab-booking" },
+      { title: "Library", icon: BookOpen, path: "/library" },
+      { title: "Events & Notices", icon: Calendar, path: "/events" },
+    ],
+  },
+  {
+    label: "People",
+    items: [
+      { title: "Faculty", icon: Briefcase, path: "/faculty" },
+      { title: "Alumni", icon: Users, path: "/alumni" },
+      { title: "ID Cards", icon: IDCard, path: "/id-cards" },
     ],
   },
   {
     label: "Administration",
     items: [
-      { title: "Alumni", icon: Users, path: "/alumni" },
+      { title: "Institutes", icon: Building2, path: "/institutes" },
+      { title: "Documents", icon: FileText, path: "/documents" },
+      { title: "Certificates", icon: FileCheck, path: "/certificates" },
       { title: "Reports", icon: BarChart3, path: "/reports" },
       { title: "Notifications", icon: Bell, path: "/notifications" },
-      { title: "User Roles", icon: UserCog, path: "/roles" },
+      { title: "RBAC / Roles", icon: Shield, path: "/roles" },
       { title: "Settings", icon: Settings, path: "/settings" },
     ],
   },

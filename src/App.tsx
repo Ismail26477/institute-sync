@@ -22,6 +22,14 @@ import AttendancePage from "./pages/Attendance";
 import PaymentsPage from "./pages/Payments";
 import HostelPage from "./pages/Hostel";
 import AnalyticsPage from "./pages/Analytics";
+import TimetablePage from "./pages/Timetable";
+import ScholarshipsPage from "./pages/Scholarships";
+import IDCardsPage from "./pages/IDCards";
+import FacultyPage from "./pages/Faculty";
+import EventsPage from "./pages/Events";
+import LabBookingPage from "./pages/LabBooking";
+import CertificatesPage from "./pages/Certificates";
+import AssignmentsPage from "./pages/Assignments";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +61,14 @@ const App = () => (
           <Route path="/roles" element={<Wrap><RolesPage /></Wrap>} />
           <Route path="/settings" element={<Wrap><SettingsPage /></Wrap>} />
           <Route path="/analytics" element={<Wrap><AnalyticsPage /></Wrap>} />
+          <Route path="/timetable" element={<Wrap><TimetablePage /></Wrap>} />
+          <Route path="/scholarships" element={<Wrap><ScholarshipsPage /></Wrap>} />
+          <Route path="/id-cards" element={<Wrap><IDCardsPage /></Wrap>} />
+          <Route path="/faculty" element={<Wrap><FacultyPage /></Wrap>} />
+          <Route path="/events" element={<Wrap><EventsPage /></Wrap>} />
+          <Route path="/lab-booking" element={<Wrap><LabBookingPage /></Wrap>} />
+          <Route path="/certificates" element={<Wrap><CertificatesPage /></Wrap>} />
+          <Route path="/assignments" element={<Wrap><AssignmentsPage /></Wrap>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
