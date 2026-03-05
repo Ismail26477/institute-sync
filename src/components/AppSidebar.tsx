@@ -15,13 +15,19 @@ import {
   ChevronRight,
   Search,
   CalendarDays,
-  UserCog,
   ClipboardList,
   CheckSquare,
   CreditCard,
   Home,
-  Bus,
   PieChart,
+  Clock,
+  Award,
+  Briefcase,
+  Calendar,
+  FlaskConical,
+  Shield,
+  FileCheck,
+  Upload,
 } from "lucide-react";
 
 const navGroups = [
