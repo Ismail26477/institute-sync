@@ -3,15 +3,28 @@ import { Shield, Users, Plus, Edit, Trash2, Check, X } from "lucide-react";
 import FormModal, { FormField, inputClass, selectClass } from "@/components/FormModal";
 import { toast } from "sonner";
 
+const allPermissions = [
+  { module: "Dashboard", actions: ["View Analytics", "Export Reports", "View KPIs"] },
+  { module: "Students", actions: ["View", "Add", "Edit", "Delete", "Bulk Import"] },
+  { module: "Fees", actions: ["View", "Collect", "Generate Receipts", "Manage Waivers", "Refund"] },
+  { module: "Attendance", actions: ["View", "Mark", "Edit", "Reports"] },
+  { module: "Exams", actions: ["View", "Create", "Grade Entry", "Publish Results", "Transcripts"] },
+  { module: "Library", actions: ["View Catalog", "Issue", "Return", "Add Books", "Manage Fines"] },
+  { module: "Timetable", actions: ["View", "Create", "Edit", "Manage Substitutions"] },
+  { module: "Hostel", actions: ["View", "Allocate Rooms", "Mess Billing", "Transport"] },
+  { module: "Documents", actions: ["View Own", "Upload", "Verify", "Manage All"] },
+  { module: "Certificates", actions: ["Request", "Generate", "Approve", "Print"] },
+  { module: "Events", actions: ["View", "Create", "RSVP", "Publish Notices"] },
+  { module: "Settings", actions: ["View", "Modify Institute", "Modify System", "Manage Users"] },
+];
+
 const rolesData = [
-  { id: 1, name: "Group Admin (HQ)", description: "Cross-institute settings, fee templates, approvals, analytics, user management.", users: 2, permissions: ["All Institutes", "Settings", "Approvals", "Analytics", "User Management"] },
-  { id: 2, name: "Institute Admin", description: "Manage fees, students, library, documents for one institute.", users: 7, permissions: ["Own Institute", "Students", "Fees", "Library", "Documents"] },
-  { id: 3, name: "Accounts / Finance", description: "Billing, collections, refunds, scholarships, financial reports.", users: 5, permissions: ["Billing", "Collections", "Refunds", "Scholarships", "Reports"] },
-  { id: 4, name: "Registrar / Academics", description: "Programs, batches, timetables, enrollments, attendance.", users: 4, permissions: ["Programs", "Batches", "Timetables", "Enrollments", "Attendance"] },
-  { id: 5, name: "Librarian", description: "Catalog, issues/returns, fines, holds, vendor records.", users: 3, permissions: ["Catalog", "Circulation", "Fines", "Inventory", "Vendors"] },
-  { id: 6, name: "Faculty", description: "Attendance marking, grades, internal document access.", users: 85, permissions: ["Attendance", "Grades", "Own Documents"] },
-  { id: 7, name: "Student", description: "Mobile app access — library, fees, notices, profile.", users: 2847, permissions: ["Own Profile", "Library Search", "Fee Status", "Notifications"] },
-  { id: 8, name: "Alumni", description: "Limited portal access for certificates and events.", users: 450, permissions: ["Own Profile", "Certificates", "Events"] },
+  { id: 1, name: "Admin", description: "Full system access across all institutes — settings, users, analytics, approvals.", users: 2, permissions: allPermissions.flatMap(p => p.actions.map(a => `${p.module}: ${a}`)), color: "bg-destructive/10 text-destructive" },
+  { id: 2, name: "HOD", description: "Department-level management — faculty, attendance, exams, timetable for own department.", users: 6, permissions: ["Dashboard: View Analytics", "Students: View", "Attendance: View", "Attendance: Mark", "Exams: View", "Exams: Grade Entry", "Timetable: View", "Timetable: Manage Substitutions", "Documents: View Own"], color: "bg-primary/10 text-primary" },
+  { id: 3, name: "Faculty", description: "Teaching operations — attendance marking, grade entry, assignment management, own documents.", users: 85, permissions: ["Dashboard: View KPIs", "Students: View", "Attendance: View", "Attendance: Mark", "Exams: View", "Exams: Grade Entry", "Library: View Catalog", "Documents: View Own", "Documents: Upload", "Events: View"], color: "bg-info/10 text-info" },
+  { id: 4, name: "Accountant", description: "Financial operations — fee collection, receipts, waivers, refunds, and financial reports.", users: 5, permissions: ["Dashboard: View KPIs", "Students: View", "Fees: View", "Fees: Collect", "Fees: Generate Receipts", "Fees: Manage Waivers", "Fees: Refund", "Dashboard: Export Reports"], color: "bg-success/10 text-success" },
+  { id: 5, name: "Student", description: "Self-service access — view own profile, attendance, grades, fee status, library, and events.", users: 2847, permissions: ["Dashboard: View KPIs", "Attendance: View", "Exams: View", "Library: View Catalog", "Documents: View Own", "Certificates: Request", "Events: View", "Events: RSVP"], color: "bg-warning/10 text-warning" },
+  { id: 6, name: "Parent", description: "View child's attendance, grades, fee status, and receive notifications.", users: 1200, permissions: ["Dashboard: View KPIs", "Attendance: View", "Exams: View", "Fees: View", "Events: View"], color: "bg-accent text-accent-foreground" },
 ];
 
 const initialUsers = [
@@ -53,7 +66,7 @@ export default function RolesPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div><h1 className="text-2xl font-display font-bold text-foreground">User Roles & Access</h1><p className="text-sm text-muted-foreground">Role-based access control (RBAC) management</p></div>
+        <div><h1 className="text-2xl font-display font-bold text-foreground">Role-Based Access Control</h1><p className="text-sm text-muted-foreground">Granular permissions for Admin, HOD, Faculty, Student, Parent & Accountant</p></div>
         <button onClick={() => { setActiveTab("Users"); setModalOpen(true); }} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity"><Plus className="w-4 h-4" /> Add User</button>
       </div>
 
@@ -70,17 +83,17 @@ export default function RolesPage() {
       </div>
 
       {activeTab === "Roles" && !selectedRole && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
           {rolesData.map((role) => (
             <div key={role.id} className="bg-card rounded-xl border border-border/50 shadow-card p-5 hover:shadow-elevated transition-all cursor-pointer" onClick={() => setSelectedRole(role)}>
               <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2"><Shield className="w-5 h-5 text-primary" /><h3 className="font-display font-semibold text-foreground">{role.name}</h3></div>
+                <div className="flex items-center gap-2"><div className={`w-8 h-8 rounded-lg ${role.color} flex items-center justify-center`}><Shield className="w-4 h-4" /></div><h3 className="font-display font-semibold text-foreground">{role.name}</h3></div>
                 <span className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{role.users} users</span>
               </div>
               <p className="text-sm text-muted-foreground mb-3">{role.description}</p>
               <div className="flex flex-wrap gap-1.5">
-                {role.permissions.slice(0, 4).map((p) => (<span key={p} className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{p}</span>))}
-                {role.permissions.length > 4 && <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">+{role.permissions.length - 4}</span>}
+                {role.permissions.slice(0, 3).map((p) => (<span key={p} className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-accent-foreground">{p}</span>))}
+                {role.permissions.length > 3 && <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground">+{role.permissions.length - 3} more</span>}
               </div>
             </div>
           ))}
@@ -91,10 +104,24 @@ export default function RolesPage() {
         <div className="space-y-4 animate-fade-in">
           <button onClick={() => setSelectedRole(null)} className="text-sm text-primary font-medium hover:underline">← Back to roles</button>
           <div className="bg-card rounded-xl border border-border/50 shadow-card p-6">
-            <div className="flex items-start gap-3 mb-4"><Shield className="w-8 h-8 text-primary" /><div><h2 className="text-xl font-display font-bold text-foreground">{selectedRole.name}</h2><p className="text-sm text-muted-foreground">{selectedRole.description}</p></div></div>
-            <h4 className="font-medium text-foreground mb-2 text-sm">Permissions</h4>
-            <div className="flex flex-wrap gap-2">
-              {selectedRole.permissions.map((p) => (<span key={p} className="inline-flex items-center gap-1 text-xs px-3 py-1 rounded-full bg-success/10 text-success font-medium"><Check className="w-3 h-3" />{p}</span>))}
+            <div className="flex items-start gap-3 mb-6"><div className={`w-12 h-12 rounded-xl ${selectedRole.color} flex items-center justify-center`}><Shield className="w-6 h-6" /></div><div><h2 className="text-xl font-display font-bold text-foreground">{selectedRole.name}</h2><p className="text-sm text-muted-foreground">{selectedRole.description}</p><p className="text-xs text-muted-foreground mt-1">{selectedRole.users} users assigned · {selectedRole.permissions.length} permissions</p></div></div>
+            <h4 className="font-medium text-foreground mb-3 text-sm">Permission Matrix</h4>
+            <div className="space-y-3">
+              {allPermissions.map(mod => {
+                const granted = mod.actions.filter(a => selectedRole.permissions.includes(`${mod.module}: ${a}`));
+                const denied = mod.actions.filter(a => !selectedRole.permissions.includes(`${mod.module}: ${a}`));
+                return (
+                  <div key={mod.module} className="border border-border/50 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2"><span className="text-sm font-medium text-foreground">{mod.module}</span><span className="text-[10px] text-muted-foreground">{granted.length}/{mod.actions.length} enabled</span></div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {mod.actions.map(a => {
+                        const isGranted = selectedRole.permissions.includes(`${mod.module}: ${a}`);
+                        return <span key={a} className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium ${isGranted ? "bg-success/10 text-success" : "bg-muted text-muted-foreground line-through opacity-50"}`}>{isGranted ? <Check className="w-2.5 h-2.5" /> : <X className="w-2.5 h-2.5" />}{a}</span>;
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
