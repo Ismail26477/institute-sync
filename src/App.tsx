@@ -30,6 +30,7 @@ import EventsPage from "./pages/Events";
 import LabBookingPage from "./pages/LabBooking";
 import CertificatesPage from "./pages/Certificates";
 import AssignmentsPage from "./pages/Assignments";
+import GPSTrackingPage from "./pages/GPSTracking";
 
 const queryClient = new QueryClient();
 
