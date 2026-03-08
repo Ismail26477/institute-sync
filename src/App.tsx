@@ -69,6 +69,7 @@ const App = () => (
           <Route path="/lab-booking" element={<Wrap><LabBookingPage /></Wrap>} />
           <Route path="/certificates" element={<Wrap><CertificatesPage /></Wrap>} />
           <Route path="/assignments" element={<Wrap><AssignmentsPage /></Wrap>} />
+          <Route path="/gps-tracking" element={<Wrap><GPSTrackingPage /></Wrap>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

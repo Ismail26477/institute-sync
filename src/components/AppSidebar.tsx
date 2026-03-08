@@ -28,6 +28,7 @@ import {
   Shield,
   FileCheck,
   Upload,
+  Radar,
 } from "lucide-react";
 
 const navGroups = [
@@ -64,6 +65,7 @@ const navGroups = [
       { title: "Lab & Booking", icon: FlaskConical, path: "/lab-booking" },
       { title: "Library", icon: BookOpen, path: "/library" },
       { title: "Events & Notices", icon: Calendar, path: "/events" },
+      { title: "GPS Tracking", icon: Radar, path: "/gps-tracking" },
     ],
   },
   {
