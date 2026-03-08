@@ -71,6 +71,17 @@ export default function LoginPage() {
             {loading ? "Signing in…" : "Sign In"}
           </button>
 
+          <div className="relative flex items-center gap-2 my-1">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-xs text-muted-foreground">or</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+
+          <button type="button" disabled={loading} onClick={() => { setEmail("admin@gmail.com"); setPassword("admin123"); }}
+            className="w-full py-2.5 rounded-lg border border-border bg-muted text-foreground font-medium text-sm hover:bg-accent transition-colors disabled:opacity-50">
+            Fill Demo Credentials
+          </button>
+
           <p className="text-center text-sm text-muted-foreground">
             Don't have an account? <Link to="/signup" className="text-primary font-medium hover:underline">Sign up</Link>
           </p>
