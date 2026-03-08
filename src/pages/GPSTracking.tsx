@@ -4,16 +4,17 @@ import {
   Shield,
   AlertTriangle,
   Users,
-  Wifi,
   WifiOff,
   RefreshCw,
   Search,
   Download,
-  ChevronDown,
+  Database,
 } from "lucide-react";
 import { MapContainer, TileLayer, Circle, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 // ─── Campus config ───
 const CAMPUS = {
@@ -24,12 +25,7 @@ const CAMPUS = {
 };
 
 // Haversine formula
-function haversineDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-) {
+function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371e3;
   const toRad = (d: number) => (d * Math.PI) / 180;
   const dLat = toRad(lat2 - lat1);
@@ -38,6 +34,16 @@ function haversineDistance(
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function getDirection(lat: number, lng: number): string {
+  const dLat = lat - CAMPUS.lat;
+  const dLng = lng - CAMPUS.lng;
+  const ns = dLat > 0 ? "North" : "South";
+  const ew = dLng > 0 ? "East" : "West";
+  if (Math.abs(dLat) < 0.0005) return ew;
+  if (Math.abs(dLng) < 0.0005) return ns;
+  return `${ns}-${ew}`;
 }
 
 type StudentStatus = "inside" | "outside" | "offline";
@@ -56,8 +62,9 @@ interface TrackedStudent {
 }
 
 interface BoundaryAlert {
-  id: number;
+  id: string;
   studentName: string;
+  studentId: string;
   rollNo: string;
   type: "exit" | "entry";
   time: string;
@@ -80,7 +87,6 @@ function generateStudents(): TrackedStudent[] {
     const isOffline = Math.random() < 0.12;
     const isOutside = !isOffline && Math.random() < 0.15;
 
-    // scatter inside or outside
     const angle = Math.random() * 2 * Math.PI;
     const dist = isOutside
       ? CAMPUS.radius + 100 + Math.random() * 800
@@ -110,17 +116,6 @@ function generateStudents(): TrackedStudent[] {
   });
 }
 
-function generateAlerts(): BoundaryAlert[] {
-  return [
-    { id: 1, studentName: "Vikram Singh", rollNo: "PHY2023005", type: "exit", time: "2 min ago", distance: 620, direction: "North-East" },
-    { id: 2, studentName: "Neha Agarwal", rollNo: "PBB2024014", type: "exit", time: "8 min ago", distance: 890, direction: "South" },
-    { id: 3, studentName: "Rajesh Pandey", rollNo: "GNM2024023", type: "entry", time: "12 min ago", distance: 340, direction: "West" },
-    { id: 4, studentName: "Manish Yadav", rollNo: "ANM2023019", type: "exit", time: "18 min ago", distance: 1100, direction: "South-West" },
-    { id: 5, studentName: "Tanvi Kapoor", rollNo: "BSC2024022", type: "entry", time: "25 min ago", distance: 210, direction: "East" },
-    { id: 6, studentName: "Suresh Patil", rollNo: "MSC2024025", type: "exit", time: "31 min ago", distance: 750, direction: "North" },
-  ];
-}
-
 // Custom marker icons
 function makeIcon(color: string) {
   return L.divIcon({
@@ -133,7 +128,6 @@ function makeIcon(color: string) {
 
 const insideIcon = makeIcon("#22c55e");
 const outsideIcon = makeIcon("#ef4444");
-const offlineIcon = makeIcon("#94a3b8");
 
 // Auto-fit map bounds
 function FitBounds({ students }: { students: TrackedStudent[] }) {
@@ -148,28 +142,118 @@ function FitBounds({ students }: { students: TrackedStudent[] }) {
   return null;
 }
 
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
 const GPSTrackingPage = () => {
   const [students, setStudents] = useState<TrackedStudent[]>(generateStudents);
-  const [alerts] = useState<BoundaryAlert[]>(generateAlerts);
+  const [alerts, setAlerts] = useState<BoundaryAlert[]>([]);
   const [filter, setFilter] = useState<"all" | StudentStatus>("all");
   const [search, setSearch] = useState("");
   const [pollCount, setPollCount] = useState(0);
   const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [persisting, setPersisting] = useState(false);
+  const { toast } = useToast();
+
+  // Load alerts from Cloud on mount
+  useEffect(() => {
+    loadAlerts();
+  }, []);
+
+  const loadAlerts = async () => {
+    const { data, error } = await supabase
+      .from("boundary_alerts")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (data && !error) {
+      setAlerts(
+        data.map((a) => ({
+          id: a.id,
+          studentName: a.student_name,
+          studentId: a.student_id,
+          rollNo: a.student_id,
+          type: a.alert_type as "exit" | "entry",
+          time: timeAgo(a.created_at),
+          distance: a.distance,
+          direction: a.direction,
+        }))
+      );
+    }
+  };
+
+  // Persist student locations and detect boundary crossings
+  const persistData = async (studentList: TrackedStudent[]) => {
+    setPersisting(true);
+    try {
+      // Batch insert student locations
+      const locationRows = studentList.map((s) => ({
+        student_id: s.id,
+        student_name: s.name,
+        latitude: s.lat,
+        longitude: s.lng,
+        distance_from_campus: s.distance,
+        status: s.status,
+      }));
+
+      await supabase.from("student_locations").insert(locationRows);
+
+      // Detect outside students and create boundary alerts
+      const outsideStudents = studentList.filter((s) => s.status === "outside");
+      if (outsideStudents.length > 0) {
+        const alertRows = outsideStudents.map((s) => ({
+          student_id: s.id,
+          student_name: s.name,
+          alert_type: "exit" as const,
+          latitude: s.lat,
+          longitude: s.lng,
+          distance: s.distance,
+          direction: getDirection(s.lat, s.lng),
+        }));
+
+        await supabase.from("boundary_alerts").insert(alertRows);
+      }
+
+      // Reload alerts from DB
+      await loadAlerts();
+
+      toast({
+        title: "Data synced to Cloud",
+        description: `${locationRows.length} locations & ${outsideStudents.length} alerts persisted`,
+      });
+    } catch (err) {
+      console.error("Persist error:", err);
+    } finally {
+      setPersisting(false);
+    }
+  };
 
   // Auto-poll every 30s
   useEffect(() => {
     const timer = setInterval(() => {
-      setStudents(generateStudents());
+      const newStudents = generateStudents();
+      setStudents(newStudents);
       setPollCount((c) => c + 1);
       setLastRefresh(new Date());
+      persistData(newStudents);
     }, 30000);
     return () => clearInterval(timer);
   }, []);
 
   const manualRefresh = useCallback(() => {
-    setStudents(generateStudents());
+    const newStudents = generateStudents();
+    setStudents(newStudents);
     setPollCount((c) => c + 1);
     setLastRefresh(new Date());
+    persistData(newStudents);
   }, []);
 
   const insideCount = students.filter((s) => s.status === "inside").length;
@@ -190,14 +274,16 @@ const GPSTrackingPage = () => {
           <h1 className="text-2xl font-display font-bold text-foreground">GPS Tracking</h1>
           <p className="text-sm text-muted-foreground">
             Real-time student location · Geofence radius {CAMPUS.radius}m · Poll #{pollCount} · Last: {lastRefresh.toLocaleTimeString()}
+            {persisting && <span className="ml-2 text-primary">⟳ Syncing…</span>}
           </p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={manualRefresh}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+            disabled={persisting}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
-            <RefreshCw className="w-4 h-4" /> Refresh Now
+            <RefreshCw className={`w-4 h-4 ${persisting ? "animate-spin" : ""}`} /> Refresh & Sync
           </button>
           <button className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-foreground text-sm font-medium hover:bg-muted transition-colors">
             <Download className="w-4 h-4" /> Export Log
@@ -225,6 +311,12 @@ const GPSTrackingPage = () => {
         ))}
       </div>
 
+      {/* Cloud sync indicator */}
+      <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 px-3 py-2 rounded-lg w-fit">
+        <Database className="w-3.5 h-3.5 text-primary" />
+        <span>Location history & alerts persisted to Lovable Cloud · {alerts.length} alerts logged</span>
+      </div>
+
       {/* Main content: Map + Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Map */}
@@ -250,7 +342,6 @@ const GPSTrackingPage = () => {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; OpenStreetMap'
               />
-              {/* Geofence */}
               <Circle
                 center={[CAMPUS.lat, CAMPUS.lng]}
                 radius={CAMPUS.radius}
@@ -262,7 +353,6 @@ const GPSTrackingPage = () => {
                   dashArray: "8 4",
                 }}
               />
-              {/* Student markers */}
               {students
                 .filter((s) => s.status !== "offline")
                 .map((s) => (
@@ -294,28 +384,36 @@ const GPSTrackingPage = () => {
             <h3 className="font-display font-semibold text-foreground flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-destructive" /> Boundary Alerts
             </h3>
-            <p className="text-xs text-muted-foreground mt-1">{alerts.filter(a => a.type === 'exit').length} exits detected today</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {alerts.filter((a) => a.type === "exit").length} exits logged · Loaded from Cloud
+            </p>
           </div>
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
-            {alerts.map((alert) => (
-              <div
-                key={alert.id}
-                className={`p-3 rounded-lg border text-sm ${
-                  alert.type === "exit"
-                    ? "bg-destructive/10 border-destructive/20 text-destructive"
-                    : "bg-success/10 border-success/20 text-success"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">{alert.studentName}</span>
-                  <span className="text-[10px] opacity-70">{alert.time}</span>
+          <div className="flex-1 overflow-y-auto p-3 space-y-2 max-h-[430px]">
+            {alerts.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                No alerts yet. Click "Refresh & Sync" to generate data.
+              </p>
+            ) : (
+              alerts.map((alert) => (
+                <div
+                  key={alert.id}
+                  className={`p-3 rounded-lg border text-sm ${
+                    alert.type === "exit"
+                      ? "bg-destructive/10 border-destructive/20 text-destructive"
+                      : "bg-success/10 border-success/20 text-success"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{alert.studentName}</span>
+                    <span className="text-[10px] opacity-70">{alert.time}</span>
+                  </div>
+                  <p className="text-xs opacity-80 mt-0.5">
+                    {alert.type === "exit" ? "⚠️ Left campus" : "✅ Returned to campus"} · {alert.distance}m · {alert.direction}
+                  </p>
+                  <p className="text-[10px] opacity-60 mt-0.5">{alert.studentId}</p>
                 </div>
-                <p className="text-xs opacity-80 mt-0.5">
-                  {alert.type === "exit" ? "⚠️ Left campus" : "✅ Returned to campus"} · {alert.distance}m · {alert.direction}
-                </p>
-                <p className="text-[10px] opacity-60 mt-0.5">{alert.rollNo}</p>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -394,7 +492,7 @@ const GPSTrackingPage = () => {
           </table>
         </div>
         <div className="p-3 border-t border-border/50 text-xs text-muted-foreground text-center">
-          Showing {filtered.length} of {students.length} students · Auto-refresh every 30s · Geofence: {CAMPUS.radius}m radius
+          Showing {filtered.length} of {students.length} students · Auto-refresh every 30s · Geofence: {CAMPUS.radius}m radius · ☁️ Cloud synced
         </div>
       </div>
     </div>
