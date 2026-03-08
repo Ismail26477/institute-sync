@@ -50,6 +50,129 @@ export type Database = {
         }
         Relationships: []
       }
+      faculty_attendance: {
+        Row: {
+          auto_detected: boolean
+          created_at: string
+          date: string
+          department: string
+          faculty_id: string
+          faculty_name: string
+          id: string
+          punch_in: string | null
+          punch_out: string | null
+          status: string
+          total_hours: number | null
+        }
+        Insert: {
+          auto_detected?: boolean
+          created_at?: string
+          date?: string
+          department?: string
+          faculty_id: string
+          faculty_name: string
+          id?: string
+          punch_in?: string | null
+          punch_out?: string | null
+          status?: string
+          total_hours?: number | null
+        }
+        Update: {
+          auto_detected?: boolean
+          created_at?: string
+          date?: string
+          department?: string
+          faculty_id?: string
+          faculty_name?: string
+          id?: string
+          punch_in?: string | null
+          punch_out?: string | null
+          status?: string
+          total_hours?: number | null
+        }
+        Relationships: []
+      }
+      faculty_locations: {
+        Row: {
+          department: string
+          distance_from_campus: number
+          faculty_id: string
+          faculty_name: string
+          id: string
+          latitude: number
+          longitude: number
+          recorded_at: string
+          status: string
+        }
+        Insert: {
+          department?: string
+          distance_from_campus: number
+          faculty_id: string
+          faculty_name: string
+          id?: string
+          latitude: number
+          longitude: number
+          recorded_at?: string
+          status: string
+        }
+        Update: {
+          department?: string
+          distance_from_campus?: number
+          faculty_id?: string
+          faculty_name?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          recorded_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      leave_requests: {
+        Row: {
+          approved_by: string | null
+          created_at: string
+          department: string
+          end_date: string
+          faculty_id: string
+          faculty_name: string
+          id: string
+          leave_type: string
+          reason: string
+          start_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_by?: string | null
+          created_at?: string
+          department?: string
+          end_date: string
+          faculty_id: string
+          faculty_name: string
+          id?: string
+          leave_type: string
+          reason?: string
+          start_date: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_by?: string | null
+          created_at?: string
+          department?: string
+          end_date?: string
+          faculty_id?: string
+          faculty_name?: string
+          id?: string
+          leave_type?: string
+          reason?: string
+          start_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       student_locations: {
         Row: {
           distance_from_campus: number
