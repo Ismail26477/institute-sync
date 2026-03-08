@@ -2,7 +2,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading, roles } = useAuth();
+  const { user, loading, roles, signOut } = useAuth();
 
   if (loading) {
     return (
@@ -26,7 +26,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
             Your account has been created but you don't have a role assigned yet. Please contact an administrator to get Admin or HOD access.
           </p>
           <button
-            onClick={() => { const { signOut } = useAuth(); signOut(); }}
+            onClick={() => signOut()}
             className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90"
           >
             Sign Out
