@@ -14,7 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      boundary_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          direction: string
+          distance: number
+          id: string
+          latitude: number
+          longitude: number
+          student_id: string
+          student_name: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          direction: string
+          distance: number
+          id?: string
+          latitude: number
+          longitude: number
+          student_id: string
+          student_name: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          direction?: string
+          distance?: number
+          id?: string
+          latitude?: number
+          longitude?: number
+          student_id?: string
+          student_name?: string
+        }
+        Relationships: []
+      }
+      student_locations: {
+        Row: {
+          distance_from_campus: number
+          id: string
+          latitude: number
+          longitude: number
+          recorded_at: string
+          status: string
+          student_id: string
+          student_name: string
+        }
+        Insert: {
+          distance_from_campus: number
+          id?: string
+          latitude: number
+          longitude: number
+          recorded_at?: string
+          status: string
+          student_id: string
+          student_name: string
+        }
+        Update: {
+          distance_from_campus?: number
+          id?: string
+          latitude?: number
+          longitude?: number
+          recorded_at?: string
+          status?: string
+          student_id?: string
+          student_name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
