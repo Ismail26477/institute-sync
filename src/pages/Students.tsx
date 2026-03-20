@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Download, Eye, Edit, GraduationCap, Loader2 } from "lucide-react";
+import { Search, Plus, Download, Eye, Edit, GraduationCap, Loader2, ArrowLeft, Pencil, ChevronRight, MessageSquare, Printer, FileDown, User } from "lucide-react";
 import FormModal, { FormField, inputClass, selectClass } from "@/components/FormModal";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -100,23 +100,86 @@ export default function StudentsPage() {
   };
 
   if (selectedStudent) {
+    const s = selectedStudent;
+    const profileRows: [string, string][] = [
+      ["Course", s.course],
+      ["Institute", s.institute || "—"],
+      ["Program", s.program || "—"],
+      ["Category", s.category],
+      ["Batch", s.batch || "—"],
+      ["Email", s.email],
+      ["Phone", s.phone || "—"],
+      ["Guardian", s.guardian || "—"],
+    ];
+
+    const statCards: { label: string; value: string; color?: string }[] = [
+      { label: "Attendance", value: "—" },
+      { label: "Percentage", value: "—" },
+      { label: "Backlog", value: "—" },
+      { label: "Internal Marks", value: "—" },
+      { label: "Fee Status", value: s.fee_status, color: s.fee_status === "paid" ? "text-success" : s.fee_status === "overdue" ? "text-destructive" : "text-warning" },
+    ];
+
     return (
-      <div className="space-y-6 animate-fade-in">
-        <button onClick={() => setSelectedStudent(null)} className="text-sm text-primary font-medium hover:underline">← Back to students</button>
-        <div className="bg-card rounded-xl border border-border/50 shadow-card p-6">
-          <div className="flex items-start gap-4 mb-6">
-            <div className="w-16 h-16 rounded-full gradient-primary flex items-center justify-center"><GraduationCap className="w-8 h-8 text-primary-foreground" /></div>
-            <div className="flex-1"><h2 className="text-xl font-display font-bold text-foreground">{selectedStudent.name}</h2><p className="text-sm text-muted-foreground">{selectedStudent.student_id} · {selectedStudent.program}</p></div>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${statusStyles[selectedStudent.status]}`}>{selectedStudent.status}</span>
+      <div className="space-y-5 animate-fade-in">
+        {/* Top bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <button onClick={() => setSelectedStudent(null)} className="inline-flex items-center gap-2 text-sm text-foreground font-medium hover:text-primary transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back to Students
+          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors"><Pencil className="w-3.5 h-3.5" /> Edit Profile</button>
+            <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors"><ChevronRight className="w-3.5 h-3.5" /> Promote to Next Sem</button>
+            <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors"><MessageSquare className="w-3.5 h-3.5" /> Send Message</button>
+            <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-muted transition-colors"><Printer className="w-3.5 h-3.5" /> Print Profile</button>
+            <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-destructive text-destructive-foreground text-sm font-medium hover:opacity-90 transition-opacity"><FileDown className="w-3.5 h-3.5" /> Download PDF</button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-            {[
-              ["Institute", selectedStudent.institute], ["Course", selectedStudent.course], ["Batch", selectedStudent.batch], ["Category", selectedStudent.category],
-              ["Email", selectedStudent.email], ["Phone", selectedStudent.phone], ["Guardian", selectedStudent.guardian],
-            ].map(([label, val]) => (
-              <div key={label} className="p-3 bg-muted/30 rounded-lg"><p className="text-muted-foreground text-xs mb-1">{label}</p><p className="font-medium text-foreground">{val || "—"}</p></div>
-            ))}
-            <div className="p-3 bg-muted/30 rounded-lg"><p className="text-muted-foreground text-xs mb-1">Fee Status</p><p className={`font-medium capitalize ${feeStatusStyles[selectedStudent.fee_status]} inline-block px-2 py-0.5 rounded-full text-xs`}>{selectedStudent.fee_status}</p></div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5">
+          {/* Left: Profile card */}
+          <div className="bg-card rounded-xl border border-border/50 shadow-card p-5">
+            <div className="flex flex-col items-center mb-5">
+              <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center mb-3 border-2 border-border">
+                <User className="w-12 h-12 text-muted-foreground" />
+              </div>
+              <h2 className="text-lg font-display font-bold text-foreground text-center">{s.name}</h2>
+              <p className="text-xs text-muted-foreground">{s.student_id}</p>
+              <span className={`mt-2 px-3 py-1 rounded-full text-xs font-semibold capitalize ${statusStyles[s.status]}`}>{s.status}</span>
+            </div>
+            <div className="divide-y divide-border/50">
+              {profileRows.map(([label, val]) => (
+                <div key={label} className="flex items-center justify-between py-2.5 text-sm">
+                  <span className="text-muted-foreground">{label}</span>
+                  <span className="font-medium text-foreground text-right max-w-[55%] truncate">{val}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Stats & details */}
+          <div className="space-y-5">
+            {/* Stats row */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {statCards.map((card) => (
+                <div key={card.label} className="bg-card rounded-xl border border-border/50 shadow-card p-4 text-center">
+                  <p className="text-xs text-muted-foreground mb-1">{card.label}</p>
+                  <p className={`text-xl font-bold capitalize ${card.color || "text-foreground"}`}>{card.value}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Academic info placeholder */}
+            <div className="bg-card rounded-xl border border-border/50 shadow-card p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-3">Academic Overview</h3>
+              <p className="text-sm text-muted-foreground">Academic data such as grades, attendance history, and performance analytics will appear here once connected.</p>
+            </div>
+
+            {/* Activity / notes placeholder */}
+            <div className="bg-card rounded-xl border border-border/50 shadow-card p-5">
+              <h3 className="text-sm font-semibold text-foreground mb-3">Recent Activity</h3>
+              <p className="text-sm text-muted-foreground">Fee payments, attendance logs, exam results, and other activity will be shown here.</p>
+            </div>
           </div>
         </div>
       </div>
