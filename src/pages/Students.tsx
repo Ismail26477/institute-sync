@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Download, Eye, Edit, GraduationCap, Loader2 } from "lucide-react";
+import { Search, Plus, Download, Eye, Edit, GraduationCap, Loader2, ArrowLeft, Pencil, ChevronRight, MessageSquare, Printer, FileDown, User } from "lucide-react";
 import FormModal, { FormField, inputClass, selectClass } from "@/components/FormModal";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
