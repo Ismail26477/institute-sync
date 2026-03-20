@@ -236,6 +236,63 @@ export type Database = {
         }
         Relationships: []
       }
+      students: {
+        Row: {
+          auth_user_id: string | null
+          batch: string
+          category: string
+          course: string
+          created_at: string
+          email: string
+          fee_status: string
+          guardian: string
+          id: string
+          institute: string
+          name: string
+          phone: string
+          program: string
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          auth_user_id?: string | null
+          batch?: string
+          category?: string
+          course?: string
+          created_at?: string
+          email: string
+          fee_status?: string
+          guardian?: string
+          id?: string
+          institute?: string
+          name: string
+          phone?: string
+          program?: string
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          auth_user_id?: string | null
+          batch?: string
+          category?: string
+          course?: string
+          created_at?: string
+          email?: string
+          fee_status?: string
+          guardian?: string
+          id?: string
+          institute?: string
+          name?: string
+          phone?: string
+          program?: string
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
