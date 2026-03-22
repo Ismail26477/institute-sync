@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { BookOpen, Plus, Upload, Clock, CheckCircle, AlertTriangle, Users, Eye, FileText } from "lucide-react";
-import FormModal, { FormField, inputClass, selectClass } from "@/components/FormModal";
+import { BookOpen, Upload, Clock, CheckCircle, AlertTriangle, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 const assignmentsData = [
@@ -24,13 +23,11 @@ const statusColors: Record<string, string> = { Active: "bg-success/10 text-succe
 export default function AssignmentsPage() {
   const [activeTab, setActiveTab] = useState<"assignments" | "submissions">("assignments");
   const [selectedAssignment, setSelectedAssignment] = useState<typeof assignmentsData[0] | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div><h1 className="text-2xl font-display font-bold text-foreground">Assignments & Projects</h1><p className="text-sm text-muted-foreground">Upload assignments, track submissions & grade with rubrics</p></div>
-        <button onClick={() => setModalOpen(true)} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90"><Plus className="w-4 h-4" /> Create Assignment</button>
+        <div><h1 className="text-2xl font-display font-bold text-foreground">Assignments & Projects</h1><p className="text-sm text-muted-foreground">View assignments, track submissions & grading status</p></div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -103,24 +100,12 @@ export default function AssignmentsPage() {
               <td className="py-3 px-4 text-right">
                 <div className="flex items-center justify-end gap-1">
                   {s.file && <button className="p-1.5 rounded-md hover:bg-muted text-muted-foreground" title="View"><Eye className="w-4 h-4" /></button>}
-                  {s.status === "Submitted" && <button onClick={() => toast.success("Grading panel opened")} className="text-xs px-3 py-1 rounded-md bg-primary/10 text-primary hover:bg-primary/20">Grade</button>}
                 </div>
               </td>
             </tr>
           ))}</tbody></table></div>
         </div>
       )}
-
-      <FormModal open={modalOpen} onClose={() => setModalOpen(false)} title="Create Assignment" onSubmit={() => { setModalOpen(false); toast.success("Assignment created"); }} submitLabel="Create">
-        <FormField label="Title" required><input className={inputClass} placeholder="Assignment title" /></FormField>
-        <div className="grid grid-cols-2 gap-4">
-          <FormField label="Subject"><select className={selectClass}><option>Anatomy</option><option>Physiology</option><option>Pharmacology</option><option>Nursing Foundation</option><option>Community Health</option><option>Microbiology</option></select></FormField>
-          <FormField label="Max Marks"><input className={inputClass} type="number" placeholder="50" /></FormField>
-        </div>
-        <FormField label="Due Date" required><input className={inputClass} type="date" /></FormField>
-        <div className="flex items-center gap-2"><input type="checkbox" className="rounded border-border" defaultChecked /><span className="text-sm text-foreground">Enable Plagiarism Check</span></div>
-        <FormField label="Rubric (comma separated)"><input className={inputClass} placeholder="Content (20), Analysis (15), Presentation (10)" /></FormField>
-      </FormModal>
     </div>
   );
 }
