@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
-type AppRole = "admin" | "hod";
+export type AppRole = "admin" | "hod" | "librarian";
 
 interface AuthContextType {
   user: User | null;
@@ -12,6 +12,8 @@ interface AuthContextType {
   hasRole: (role: AppRole) => boolean;
   isAdmin: boolean;
   isHOD: boolean;
+  isLibrarian: boolean;
+  isLibraryStaff: boolean;
   displayName: string;
   signOut: () => Promise<void>;
 }
@@ -38,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .from("profiles")
       .select("display_name")
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
     if (data?.display_name) setDisplayName(data.display_name);
   };
 
@@ -76,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const hasRole = (role: AppRole) => roles.includes(role);
   const isAdmin = hasRole("admin");
   const isHOD = hasRole("hod");
+  const isLibrarian = hasRole("librarian");
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -84,7 +87,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, roles, hasRole, isAdmin, isHOD, displayName, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        loading,
+        roles,
+        hasRole,
+        isAdmin,
+        isHOD,
+        isLibrarian,
+        isLibraryStaff: isAdmin || isLibrarian,
+        displayName,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

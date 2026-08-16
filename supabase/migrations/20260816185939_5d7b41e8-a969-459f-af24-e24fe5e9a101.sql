@@ -1,0 +1,4 @@
+CREATE POLICY "Authenticated can read library book images" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'library-books');
+CREATE POLICY "Library staff can upload library book images" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'library-books' AND public.is_library_staff(auth.uid()));
+CREATE POLICY "Library staff can update library book images" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'library-books' AND public.is_library_staff(auth.uid()));
+CREATE POLICY "Library staff can delete library book images" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'library-books' AND public.is_library_staff(auth.uid()));
