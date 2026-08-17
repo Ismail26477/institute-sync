@@ -9,7 +9,7 @@ const allPermissions = [
   { module: "Fees", actions: ["View", "Collect", "Generate Receipts", "Manage Waivers", "Refund"] },
   { module: "Attendance", actions: ["View", "Mark", "Edit", "Reports"] },
   { module: "Exams", actions: ["View", "Create", "Grade Entry", "Publish Results", "Transcripts"] },
-  { module: "Library", actions: ["View Catalog", "Issue", "Return", "Add Books", "Manage Fines"] },
+  { module: "Library", actions: ["View", "Add Book", "Edit Book", "Delete Book", "Issue Book", "Return Book", "View Circulation", "View Overdue", "Manage Inventory", "View Reports", "Export Reports"] },
   { module: "Timetable", actions: ["View", "Create", "Edit", "Manage Substitutions"] },
   { module: "Hostel", actions: ["View", "Allocate Rooms", "Mess Billing", "Transport"] },
   { module: "Documents", actions: ["View Own", "Upload", "Verify", "Manage All"] },
@@ -21,10 +21,11 @@ const allPermissions = [
 const rolesData = [
   { id: 1, name: "Admin", description: "Full system access across all institutes — settings, users, analytics, approvals.", users: 2, permissions: allPermissions.flatMap(p => p.actions.map(a => `${p.module}: ${a}`)), color: "bg-destructive/10 text-destructive" },
   { id: 2, name: "HOD", description: "Department-level management — faculty, attendance, exams, timetable for own department.", users: 6, permissions: ["Dashboard: View Analytics", "Students: View", "Attendance: View", "Attendance: Mark", "Exams: View", "Exams: Grade Entry", "Timetable: View", "Timetable: Manage Substitutions", "Documents: View Own"], color: "bg-primary/10 text-primary" },
-  { id: 3, name: "Faculty", description: "Teaching operations — attendance marking, grade entry, assignment management, own documents.", users: 85, permissions: ["Dashboard: View KPIs", "Students: View", "Attendance: View", "Attendance: Mark", "Exams: View", "Exams: Grade Entry", "Library: View Catalog", "Documents: View Own", "Documents: Upload", "Events: View"], color: "bg-info/10 text-info" },
+  { id: 3, name: "Faculty", description: "Teaching operations — attendance marking, grade entry, assignment management, own documents.", users: 85, permissions: ["Dashboard: View KPIs", "Students: View", "Attendance: View", "Attendance: Mark", "Exams: View", "Exams: Grade Entry", "Library: View", "Documents: View Own", "Documents: Upload", "Events: View"], color: "bg-info/10 text-info" },
   { id: 4, name: "Accountant", description: "Financial operations — fee collection, receipts, waivers, refunds, and financial reports.", users: 5, permissions: ["Dashboard: View KPIs", "Students: View", "Fees: View", "Fees: Collect", "Fees: Generate Receipts", "Fees: Manage Waivers", "Fees: Refund", "Dashboard: Export Reports"], color: "bg-success/10 text-success" },
-  { id: 5, name: "Student", description: "Self-service access — view own profile, attendance, grades, fee status, library, and events.", users: 2847, permissions: ["Dashboard: View KPIs", "Attendance: View", "Exams: View", "Library: View Catalog", "Documents: View Own", "Certificates: Request", "Events: View", "Events: RSVP"], color: "bg-warning/10 text-warning" },
+  { id: 5, name: "Student", description: "Self-service access — view own profile, attendance, grades, fee status, library, and events.", users: 2847, permissions: ["Dashboard: View KPIs", "Attendance: View", "Exams: View", "Library: View", "Documents: View Own", "Certificates: Request", "Events: View", "Events: RSVP"], color: "bg-warning/10 text-warning" },
   { id: 6, name: "Parent", description: "View child's attendance, grades, fee status, and receive notifications.", users: 1200, permissions: ["Dashboard: View KPIs", "Attendance: View", "Exams: View", "Fees: View", "Events: View"], color: "bg-accent text-accent-foreground" },
+  { id: 7, name: "Librarian", description: "Library operations — manage books, issue and return books, students' borrowing records, overdue books, inventory and circulation.", users: 1, permissions: ["Library: View", "Library: Add Book", "Library: Edit Book", "Library: Delete Book", "Library: Issue Book", "Library: Return Book", "Library: View Circulation", "Library: View Overdue", "Library: Manage Inventory", "Library: View Reports", "Library: Export Reports", "Students: View"], color: "bg-info/10 text-info" },
 ];
 
 const initialUsers = [
