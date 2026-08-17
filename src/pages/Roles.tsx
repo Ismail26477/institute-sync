@@ -9,7 +9,7 @@ const allPermissions = [
   { module: "Fees", actions: ["View", "Collect", "Generate Receipts", "Manage Waivers", "Refund"] },
   { module: "Attendance", actions: ["View", "Mark", "Edit", "Reports"] },
   { module: "Exams", actions: ["View", "Create", "Grade Entry", "Publish Results", "Transcripts"] },
-  { module: "Library", actions: ["View Catalog", "Issue", "Return", "Add Books", "Manage Fines"] },
+  { module: "Library", actions: ["View", "Add Book", "Edit Book", "Delete Book", "Issue Book", "Return Book", "View Circulation", "View Overdue", "Manage Inventory", "View Reports", "Export Reports"] },
   { module: "Timetable", actions: ["View", "Create", "Edit", "Manage Substitutions"] },
   { module: "Hostel", actions: ["View", "Allocate Rooms", "Mess Billing", "Transport"] },
   { module: "Documents", actions: ["View Own", "Upload", "Verify", "Manage All"] },
