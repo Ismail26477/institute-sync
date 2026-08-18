@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Shield, Users, Plus, Edit, Trash2, Check, X } from "lucide-react";
+import { Shield, Users, Plus, Edit, Trash2, Check, X, Eye, EyeOff } from "lucide-react";
 import FormModal, { FormField, inputClass, selectClass } from "@/components/FormModal";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const allPermissions = [
