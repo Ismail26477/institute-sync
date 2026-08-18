@@ -48,15 +48,34 @@ export default function RolesPage() {
   const [selectedRole, setSelectedRole] = useState<typeof rolesData[0] | null>(null);
   const [users, setUsers] = useState(initialUsers);
   const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", role: "Faculty", institute: "All" });
+  const [showPw, setShowPw] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", role: "Librarian", institute: "All", password: "", confirmPassword: "" });
 
-  const handleAddUser = () => {
-    if (!form.name || !form.email) return toast.error("Name and email are required");
-    const newUser = { id: Date.now(), name: form.name, email: form.email, role: form.role, institute: form.institute, status: "active", lastLogin: "—" };
-    setUsers([...users, newUser]);
+  const handleAddUser = async () => {
+    if (!form.name.trim() || !form.email.trim()) return toast.error("Name and email are required");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) return toast.error("Please enter a valid email address");
+    if (form.password.length < 6) return toast.error("Password must be at least 6 characters");
+    if (form.password !== form.confirmPassword) return toast.error("Passwords do not match");
+
+    setCreating(true);
+    const { data, error } = await supabase.functions.invoke("create-user", {
+      body: {
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+        role: form.role.toLowerCase(),
+        department: form.institute,
+      },
+    });
+    setCreating(false);
+    const errMessage = (data as { error?: string })?.error;
+    if (error || errMessage) return toast.error(errMessage || error?.message || "Could not create the user");
+
+    setUsers([...users, { id: Date.now(), name: form.name, email: form.email, role: form.role, institute: form.institute, status: "active", lastLogin: "—" }]);
     setModalOpen(false);
-    setForm({ name: "", email: "", role: "Faculty", institute: "All" });
-    toast.success(`User "${form.name}" added as ${form.role}`);
+    setForm({ name: "", email: "", role: "Librarian", institute: "All", password: "", confirmPassword: "" });
+    toast.success(`User "${form.name}" created as ${form.role}`);
   };
 
   const handleDeleteUser = (user: typeof initialUsers[0]) => {
@@ -67,7 +86,7 @@ export default function RolesPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div><h1 className="text-2xl font-display font-bold text-foreground">Role-Based Access Control</h1><p className="text-sm text-muted-foreground">Granular permissions for Admin, HOD, Faculty, Student, Parent & Accountant</p></div>
+        <div><h1 className="text-2xl font-display font-bold text-foreground">Role-Based Access Control</h1><p className="text-sm text-muted-foreground">Granular permissions for Admin, HOD, Faculty, Student, Parent, Accountant & Librarian</p></div>
         <button onClick={() => { setActiveTab("Users"); setModalOpen(true); }} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity"><Plus className="w-4 h-4" /> Add User</button>
       </div>
 
