@@ -14,6 +14,7 @@ import {
   Building2,
   ChevronLeft,
   ChevronRight,
+  X,
   Search,
   CalendarDays,
   ClipboardList,
@@ -100,31 +101,48 @@ const librarianNavGroups = [
   },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ mobileOpen = false, onCloseMobile }: { mobileOpen?: boolean; onCloseMobile?: () => void }) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const { isAdmin, isLibrarian } = useAuth();
   const groups = isLibrarian && !isAdmin ? librarianNavGroups : navGroups;
 
   return (
-    <aside
-      className={`sticky top-0 h-screen flex flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300 ${
-        collapsed ? "w-[68px]" : "w-[260px]"
-      }`}
-    >
+    <>
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-[2px] lg:hidden"
+          onClick={onCloseMobile}
+          aria-hidden
+        />
+      )}
+      <aside
+        className={`z-50 flex flex-col border-r border-sidebar-border bg-sidebar transition-transform duration-300 lg:transition-all
+        fixed inset-y-0 left-0 w-[260px] max-w-[85vw] lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 lg:max-w-none
+        ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
+        ${collapsed ? "lg:w-[68px]" : "lg:w-[260px]"}`}
+      >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 h-16 border-b border-sidebar-border shrink-0">
         <div className="w-9 h-9 rounded-lg gradient-primary flex items-center justify-center shrink-0">
           <GraduationCap className="w-5 h-5 text-primary-foreground" />
         </div>
         {!collapsed && (
-          <div className="overflow-hidden">
+          <div className="overflow-hidden flex-1">
             <h1 className="font-display font-bold text-foreground text-[15px] leading-tight truncate">
               EduManage
             </h1>
             <p className="text-[11px] text-muted-foreground truncate">College CMS</p>
           </div>
         )}
+        <button
+          onClick={onCloseMobile}
+          className="ml-auto p-2 rounded-lg text-muted-foreground hover:bg-sidebar-accent lg:hidden"
+          aria-label="Close menu"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Search */}
@@ -156,6 +174,7 @@ export function AppSidebar() {
                   <li key={item.path}>
                     <NavLink
                       to={item.path}
+                      onClick={onCloseMobile}
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
                         isActive
                           ? "bg-primary text-primary-foreground shadow-sm"
@@ -175,7 +194,7 @@ export function AppSidebar() {
       </nav>
 
       {/* Collapse toggle */}
-      <div className="px-3 py-3 border-t border-sidebar-border shrink-0">
+      <div className="px-3 py-3 border-t border-sidebar-border shrink-0 hidden lg:block">
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="flex items-center justify-center w-full py-2 rounded-lg text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
@@ -184,6 +203,7 @@ export function AppSidebar() {
           {!collapsed && <span className="ml-2 text-sm">Collapse</span>}
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }
