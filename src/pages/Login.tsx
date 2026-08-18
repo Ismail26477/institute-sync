@@ -15,13 +15,20 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      setLoading(false);
       toast({ title: "Login failed", description: error.message, variant: "destructive" });
-    } else {
-      navigate("/");
+      return;
     }
+    // Route the user to the dashboard their role has access to.
+    const { data: roleRows } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", data.user!.id);
+    const roles = (roleRows ?? []).map((r) => r.role as string);
+    setLoading(false);
+    navigate(roles.includes("librarian") && !roles.includes("admin") ? "/library" : "/");
   };
 
   return (
