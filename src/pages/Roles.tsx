@@ -175,13 +175,27 @@ export default function RolesPage() {
         </div>
       )}
 
-      <FormModal open={modalOpen} onClose={() => setModalOpen(false)} title="Add User" onSubmit={handleAddUser} submitLabel="Add User">
+      <FormModal open={modalOpen} onClose={() => setModalOpen(false)} title="Add User" onSubmit={handleAddUser} submitLabel={creating ? "Creating…" : "Add User"}>
         <FormField label="Full Name" required><input className={inputClass} placeholder="User full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></FormField>
         <FormField label="Email" required><input className={inputClass} type="email" placeholder="user@edumanage.in" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></FormField>
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Role" required><select className={selectClass} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>{roleNames.map(r => <option key={r} value={r}>{r}</option>)}</select></FormField>
           <FormField label="Institute"><select className={selectClass} value={form.institute} onChange={(e) => setForm({ ...form, institute: e.target.value })}>{institutesList.map(i => <option key={i} value={i}>{i}</option>)}</select></FormField>
         </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField label="Password" required>
+            <div className="relative">
+              <input className={inputClass} type={showPw ? "text" : "password"} placeholder="Minimum 6 characters" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </FormField>
+          <FormField label="Confirm Password" required>
+            <input className={inputClass} type={showPw ? "text" : "password"} placeholder="Re-enter password" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} />
+          </FormField>
+        </div>
+        <p className="text-xs text-muted-foreground">Passwords are stored securely by the authentication system — never in plain text. Admin, HOD and Librarian users can sign in with their email and password immediately.</p>
       </FormModal>
     </div>
   );
