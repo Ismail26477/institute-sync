@@ -10,7 +10,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const { displayName, roles, signOut } = useAuth();
 
-  const roleLabel = roles.includes("admin") ? "Admin" : roles.includes("hod") ? "HOD" : "User";
+  const roleLabel = roles.includes("admin") ? "Admin" : roles.includes("hod") ? "HOD" : roles.includes("librarian") ? "Librarian" : "User";
 
   return (
     <div className="flex min-h-screen w-full bg-background">

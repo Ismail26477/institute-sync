@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   LayoutDashboard,
   GraduationCap,
@@ -90,9 +91,20 @@ const navGroups = [
   },
 ];
 
+const librarianNavGroups = [
+  {
+    label: "Library",
+    items: [
+      { title: "Library Dashboard", icon: BookOpen, path: "/library" },
+    ],
+  },
+];
+
 export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const { isAdmin, isLibrarian } = useAuth();
+  const groups = isLibrarian && !isAdmin ? librarianNavGroups : navGroups;
 
   return (
     <aside
@@ -130,7 +142,7 @@ export function AppSidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-5">
-        {navGroups.map((group) => (
+        {groups.map((group) => (
           <div key={group.label}>
             {!collapsed && (
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 px-3">

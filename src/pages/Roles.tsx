@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Shield, Users, Plus, Edit, Trash2, Check, X } from "lucide-react";
+import { Shield, Users, Plus, Edit, Trash2, Check, X, Eye, EyeOff } from "lucide-react";
 import FormModal, { FormField, inputClass, selectClass } from "@/components/FormModal";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const allPermissions = [
@@ -48,15 +49,34 @@ export default function RolesPage() {
   const [selectedRole, setSelectedRole] = useState<typeof rolesData[0] | null>(null);
   const [users, setUsers] = useState(initialUsers);
   const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", role: "Faculty", institute: "All" });
+  const [showPw, setShowPw] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", role: "Librarian", institute: "All", password: "", confirmPassword: "" });
 
-  const handleAddUser = () => {
-    if (!form.name || !form.email) return toast.error("Name and email are required");
-    const newUser = { id: Date.now(), name: form.name, email: form.email, role: form.role, institute: form.institute, status: "active", lastLogin: "—" };
-    setUsers([...users, newUser]);
+  const handleAddUser = async () => {
+    if (!form.name.trim() || !form.email.trim()) return toast.error("Name and email are required");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) return toast.error("Please enter a valid email address");
+    if (form.password.length < 6) return toast.error("Password must be at least 6 characters");
+    if (form.password !== form.confirmPassword) return toast.error("Passwords do not match");
+
+    setCreating(true);
+    const { data, error } = await supabase.functions.invoke("create-user", {
+      body: {
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+        role: form.role.toLowerCase(),
+        department: form.institute,
+      },
+    });
+    setCreating(false);
+    const errMessage = (data as { error?: string })?.error;
+    if (error || errMessage) return toast.error(errMessage || error?.message || "Could not create the user");
+
+    setUsers([...users, { id: Date.now(), name: form.name, email: form.email, role: form.role, institute: form.institute, status: "active", lastLogin: "—" }]);
     setModalOpen(false);
-    setForm({ name: "", email: "", role: "Faculty", institute: "All" });
-    toast.success(`User "${form.name}" added as ${form.role}`);
+    setForm({ name: "", email: "", role: "Librarian", institute: "All", password: "", confirmPassword: "" });
+    toast.success(`User "${form.name}" created as ${form.role}`);
   };
 
   const handleDeleteUser = (user: typeof initialUsers[0]) => {
@@ -67,7 +87,7 @@ export default function RolesPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div><h1 className="text-2xl font-display font-bold text-foreground">Role-Based Access Control</h1><p className="text-sm text-muted-foreground">Granular permissions for Admin, HOD, Faculty, Student, Parent & Accountant</p></div>
+        <div><h1 className="text-2xl font-display font-bold text-foreground">Role-Based Access Control</h1><p className="text-sm text-muted-foreground">Granular permissions for Admin, HOD, Faculty, Student, Parent, Accountant & Librarian</p></div>
         <button onClick={() => { setActiveTab("Users"); setModalOpen(true); }} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity"><Plus className="w-4 h-4" /> Add User</button>
       </div>
 
@@ -155,13 +175,27 @@ export default function RolesPage() {
         </div>
       )}
 
-      <FormModal open={modalOpen} onClose={() => setModalOpen(false)} title="Add User" onSubmit={handleAddUser} submitLabel="Add User">
+      <FormModal open={modalOpen} onClose={() => setModalOpen(false)} title="Add User" onSubmit={handleAddUser} submitLabel={creating ? "Creating…" : "Add User"}>
         <FormField label="Full Name" required><input className={inputClass} placeholder="User full name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></FormField>
         <FormField label="Email" required><input className={inputClass} type="email" placeholder="user@edumanage.in" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></FormField>
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Role" required><select className={selectClass} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>{roleNames.map(r => <option key={r} value={r}>{r}</option>)}</select></FormField>
           <FormField label="Institute"><select className={selectClass} value={form.institute} onChange={(e) => setForm({ ...form, institute: e.target.value })}>{institutesList.map(i => <option key={i} value={i}>{i}</option>)}</select></FormField>
         </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField label="Password" required>
+            <div className="relative">
+              <input className={inputClass} type={showPw ? "text" : "password"} placeholder="Minimum 6 characters" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+              <button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </FormField>
+          <FormField label="Confirm Password" required>
+            <input className={inputClass} type={showPw ? "text" : "password"} placeholder="Re-enter password" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} />
+          </FormField>
+        </div>
+        <p className="text-xs text-muted-foreground">Passwords are stored securely by the authentication system — never in plain text. Admin, HOD and Librarian users can sign in with their email and password immediately.</p>
       </FormModal>
     </div>
   );

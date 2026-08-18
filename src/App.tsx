@@ -40,8 +40,10 @@ import GPSTrackingPage from "./pages/GPSTracking";
 
 const queryClient = new QueryClient();
 
-const Wrap = ({ children }: { children: React.ReactNode }) => (
-  <ProtectedRoute>
+type AppRole = "admin" | "hod" | "librarian";
+
+const Wrap = ({ children, roles }: { children: React.ReactNode; roles?: AppRole[] }) => (
+  <ProtectedRoute allowedRoles={roles}>
     <AppLayout>{children}</AppLayout>
   </ProtectedRoute>
 );
@@ -68,7 +70,7 @@ const App = () => (
             <Route path="/exams" element={<Wrap><ExamsPage /></Wrap>} />
             <Route path="/fees" element={<Wrap><FeesPage /></Wrap>} />
             <Route path="/payments" element={<Wrap><PaymentsPage /></Wrap>} />
-            <Route path="/library" element={<Wrap><LibraryPage /></Wrap>} />
+            <Route path="/library" element={<Wrap roles={["admin", "hod", "librarian"]}><LibraryPage /></Wrap>} />
             <Route path="/documents" element={<Wrap><DocumentsPage /></Wrap>} />
             <Route path="/academics" element={<Wrap><AcademicsPage /></Wrap>} />
             <Route path="/hostel" element={<Wrap><HostelPage /></Wrap>} />
