@@ -445,6 +445,35 @@ export default function LibraryPage() {
                 </tr>
               ))}</tbody>
             </table></div>
+            <div className="md:hidden divide-y divide-border/50">{filteredCatalog.map((b) => (
+              <div key={b.id} className="p-4 space-y-3">
+                <div className="flex gap-3">
+                  {coverUrl(b)
+                    ? <img src={coverUrl(b)} alt={`${b.title} cover`} className="w-12 h-16 object-cover rounded shrink-0" />
+                    : <div className="w-12 h-16 rounded bg-muted flex items-center justify-center shrink-0"><BookOpen className="w-5 h-5 text-muted-foreground" /></div>}
+                  <div className="min-w-0 flex-1">
+                    <button onClick={() => setDetailBook(b)} className="text-left font-medium text-foreground leading-snug">{b.title}</button>
+                    <p className="text-xs text-muted-foreground truncate">{b.author}</p>
+                    <p className="text-[11px] text-muted-foreground font-mono truncate">{b.isbn || "—"}</p>
+                    <div className="mt-1.5"><StatusPill status={bookStatus(b)} /></div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                  <p>Category: <span className="text-foreground">{b.category}</span></p>
+                  <p>Location: <span className="text-foreground">{b.location}</span></p>
+                  <p>Copies: <span className="text-foreground">{b.total_copies}</span></p>
+                  <p>Available: <span className="text-foreground">{b.available_copies}</span></p>
+                </div>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  <button onClick={() => setDetailBook(b)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium"><Eye className="w-3.5 h-3.5" /> View</button>
+                  {isLibraryStaff && <>
+                    <button onClick={() => openEditBook(b)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium"><Pencil className="w-3.5 h-3.5" /> Edit</button>
+                    <button onClick={() => openIssue(b)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium"><ArrowRightLeft className="w-3.5 h-3.5" /> Issue</button>
+                    <button onClick={() => deleteBook(b)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-destructive"><Trash2 className="w-3.5 h-3.5" /> Delete</button>
+                  </>}
+                </div>
+              </div>
+            ))}</div>
             {filteredCatalog.length === 0 && <EmptyState message={search ? "No matching books found." : "No books found."} />}
           </div>
         </div>
@@ -485,6 +514,24 @@ export default function LibraryPage() {
                 </tr>
               ))}</tbody>
             </table></div>
+            <div className="md:hidden divide-y divide-border/50">{circulationRows.map((i) => (
+              <div key={i.id} className="p-4 space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="font-medium text-foreground leading-snug">{i.books?.title ?? "—"}</p>
+                  <StatusPill status={isOverdue(i) ? "Overdue" : i.status} />
+                </div>
+                <p className="text-xs text-muted-foreground">{i.students?.name ?? "—"} · {i.students?.student_id ?? "—"}</p>
+                <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
+                  <p>Issued: <span className="text-foreground">{i.issue_date}</span></p>
+                  <p>Due: <span className="text-foreground">{i.due_date}</span></p>
+                  <p>Returned: <span className="text-foreground">{i.returned_date ?? "—"}</span></p>
+                  <p>By: <span className="text-foreground">{i.issued_by_name || "—"}</span></p>
+                </div>
+                {isLibraryStaff && !i.returned_date && (
+                  <button onClick={() => openReturn(i)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium"><RotateCcw className="w-3.5 h-3.5" /> Return Book</button>
+                )}
+              </div>
+            ))}</div>
             {circulationRows.length === 0 && <EmptyState message="No circulation records found." />}
           </div>
         </div>
@@ -537,6 +584,17 @@ export default function LibraryPage() {
                 </tr>
               ))}</tbody>
             </table></div>
+            <div className="md:hidden divide-y divide-border/50">{returnRows.map((i) => (
+              <div key={i.id} className="p-4 space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="font-medium text-foreground leading-snug">{i.books?.title}</p>
+                  <StatusPill status={isOverdue(i) ? "Overdue" : i.due_date === todayISO() ? "Due Today" : "Issued"} />
+                </div>
+                <p className="text-xs text-muted-foreground">{i.students?.name} · {i.students?.student_id}</p>
+                <p className="text-xs text-muted-foreground">Issued {i.issue_date} · Due {i.due_date}</p>
+                {isLibraryStaff && <button onClick={() => openReturn(i)} className="w-full justify-center inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium"><RotateCcw className="w-3.5 h-3.5" /> Return Book</button>}
+              </div>
+            ))}</div>
             {returnRows.length === 0 && <EmptyState message="No books are currently issued." />}
           </div>
         </div>
@@ -563,6 +621,20 @@ export default function LibraryPage() {
               </tr>
             ))}</tbody>
           </table></div>
+          <div className="md:hidden divide-y divide-border/50">{overdueIssues.map((i) => (
+            <div key={i.id} className="p-4 space-y-2 bg-destructive/5">
+              <div className="flex items-start justify-between gap-3">
+                <p className="font-medium text-foreground leading-snug">{i.books?.title}</p>
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-destructive/10 text-destructive shrink-0">{daysBetween(i.due_date, todayISO())}d</span>
+              </div>
+              <p className="text-xs text-muted-foreground">{i.students?.name} · {i.students?.student_id}</p>
+              <p className="text-xs text-muted-foreground">Issued {i.issue_date} · Due {i.due_date}</p>
+              <div className="flex gap-2">
+                <button onClick={() => { const b = books.find((x) => x.id === i.book_id); if (b) setDetailBook(b); }} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium">View Book</button>
+                {isLibraryStaff && <button onClick={() => openReturn(i)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium">Return</button>}
+              </div>
+            </div>
+          ))}</div>
           {overdueIssues.length === 0 && <EmptyState message="No overdue books. Great job!" />}
         </div>
       )}
